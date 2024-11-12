@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const { type } = require('os')
+
 
 const phoneSchema = new mongoose.Schema({
   name: String,
@@ -10,13 +10,13 @@ const phoneSchema = new mongoose.Schema({
   camera:String,
   battery:String,
   displaySize: String,
-  os: ({
+  os: [{
     type: String,
     enum: [ "iOS","Andriod","Others" ]
-  }),
+  }],
   releaseDate: Date,
   price:String,
-  color:{
+  color:[{
     type:String,
    enum: [    "Black",
     "White",
@@ -32,7 +32,7 @@ const phoneSchema = new mongoose.Schema({
     "Yellow",
     "Orange",
     "Teal"
-  ]},
+  ]}],
   imageUrl: String,
   weight:String
 })

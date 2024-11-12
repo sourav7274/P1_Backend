@@ -1,59 +1,32 @@
 const mongoose = require("mongoose")
-const { type } = require("os")
 
 const gameSchema = new mongoose.Schema({
-    name:String,
-    category:({
+    name : String,
+    category:[{
         type:String,
-        enum :[
-            "Action",
-            "Adventure",
-            "Role-Playing Game (RPG)",
-            "Sports",
-            "Racing",
-            "Simulation",
-            "Strategy",
-            "Puzzle",
-            "Shooter",
-            "Fighting",
-            "Platformer",
-            "Open World",
-            "Survival",
-            "Horror",
-            "Card",
+        enum :["Action","Adventure","Role-Playing Game (RPG)","Sports","Racing",
+            "Simulation","Strategy","Puzzle","Shooter","Fighting",
+            "Platformer","Open World","Survival","Horror","Card",
             "MMORPG"
           ]
-    }),
-    pgRating: ({
+    }],
+    pgRating: [{
         type:String,
-        enum: [
-                "E",        // Everyone
-                "E10+",     // Everyone 10 and older
-                "T",        // Teen
-                "M",        // Mature
-                "AO",       // Adults Only
-                "RP",       // Rating Pending
-                "PG",       // Parental Guidance (less common in video games, more common in movies)
-                "C",        // Early Childhood
-                "D",        // Suggestive Themes
-                "H",        // Horror
-                "S",        // Sexual Content
-                "V",        // Violence
-            ]
-    }),
+        enum: ["E","E10+","T", "M", "AO","RP","S","V"]
+    }],
     completionTime: Number,
-    userRating:({
+    userRating:{
         type:Number,
         default:1,
         max:10,
         min:1
-    }),
-    metaCriticRating:({
+    },
+    metaCriticRating:{
         type:Number,
         default:1,
-        max:10,
+        max:100,
         min:1
-    }),
+    },
     studio:String,
     publisher:String,
     price:Number,
@@ -64,7 +37,11 @@ const gameSchema = new mongoose.Schema({
         default: false
     },
     imageUrl: String
-})
+   },
+   {
+    timestamps: true
+   }
+)
 
 const Game = mongoose.model("Game",gameSchema)
 
