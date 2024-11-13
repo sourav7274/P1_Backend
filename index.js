@@ -67,6 +67,16 @@ async function fetchBookById(id) {
 // Api to fetch products
 
 
+app.get('/products',async (req,res) =>{
+    const games = await Game.find()
+    const jackets = await Jacket.find()
+    const books = await Phone.find()
+    const phones = await Book.find()
+
+    const products = [...games,...jackets,...books,...phones]
+    res.status(200).json({message:"Success",data:products})
+})
+
 app.get('/games/:id',async (req,res) =>{
     try{
         const data = await fetchGamesById(req.params.id)
