@@ -88,7 +88,7 @@ app.get('/games/:id',async (req,res) =>{
     }
 })
 
-app.get('/games',async (req,res) =>{
+app.get('/game',async (req,res) =>{
     try{
         const games = await Game.find()
         res.status(200).json({message:"Success",data: games})
@@ -113,7 +113,7 @@ app.get('/phone/:id',async (req,res) =>{
 
 app.get('/phone',async (req,res) =>{
     try{
-        const games = await Game.find()
+        const games = await Phone.find()
         res.status(200).json({message:"Success",data: games})
     }
     catch(error)
@@ -135,7 +135,7 @@ app.get('/jacket/:id',async (req,res) =>{
 })
 app.get('/jacket',async (req,res) =>{
     try{
-        const games = await Game.find()
+        const games = await Jacket.find()
         res.status(200).json({message:"Success",data: games})
     }
     catch(error)
@@ -157,7 +157,7 @@ app.get('/book/:id',async (req,res) =>{
 })
 app.get('/book',async (req,res) =>{
     try{
-        const games = await Game.find()
+        const games = await Book.find()
         res.status(200).json({message:"Success",data: games})
     }
     catch(error)

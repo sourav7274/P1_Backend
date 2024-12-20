@@ -33,7 +33,11 @@ const bookSchema = new mongoose.Schema({
     },
     imageUrl: String,
     summary: String,
-    coverImageUrl: String,
+    price: Number,
+    description:String,
+    images:{
+        type:[String]
+    }
     },
     {
         timestamps: true

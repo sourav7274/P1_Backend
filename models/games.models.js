@@ -1,4 +1,5 @@
 const mongoose = require("mongoose")
+const { type } = require("os")
 
 const gameSchema = new mongoose.Schema({
     name : String,
@@ -36,7 +37,11 @@ const gameSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    imageUrl: String
+    imageUrl: String,
+    description:String,
+    images:{
+        type:[String]
+    }
    },
    {
     timestamps: true
