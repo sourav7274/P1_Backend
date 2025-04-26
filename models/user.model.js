@@ -1,30 +1,48 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-    name:{
-        type:String,
-        required:true
+  name: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: String,
+  address: [
+    {
+      addName: String,
+      phnNumber: String,
+      houseNo: String,
+      street: String,
+      city: String,
+      state: String,
+      country: String,
+      pincode: String,
+      landmark: String,
     },
-    email:{
-        type:String,
-        required:true,
-        unique:true,
+  ],
+  wishlist: [
+    {
+      proID: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+      quantity: {
+        type: Number,
+       
+      },
     },
-    password:String,
-    address:[{
-        addName:String,
-        phnNumber:String,
-        houseNo:String,
-        street:String,
-        city:String,
-        state:String,
-        country:String,
-        pincode:String,
-        landmark:String,
-    }],
-    wishlist:[],
-    cart:[],
-    orderHistory:{type:mongoose.Schema.Types.ObjectId,red:"Order"}
-})
+  ],
+  cart: [
+    {
+      proID: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+      quantity: {
+        type: Number,
+       
+      },
+    },
+  ],
+  orderHistory: { type: mongoose.Schema.Types.ObjectId, red: "Order" },
+});
 
-module.exports = mongoose.model('eComUser',userSchema)
+module.exports = mongoose.model("eComUser", userSchema);

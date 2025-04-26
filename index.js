@@ -10,14 +10,9 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-const Game = require("./models/games.models");
-const Jacket = require("./models/jacket.models");
-const Phone = require("./models/phone.models");
-const Book = require("./models/books.models");
 const User = require("./models/user.model");
 const Order = require("./models/order.model");
-
-const { error } = require("console");
+const Product = require("./models/product.model");
 
 initialDatabase();
 
@@ -26,41 +21,6 @@ app.get("/", (req, res) => {
 });
 
 // Functions to fetch data
-
-async function fetchGamesById(id) {
-  try {
-    const data = await Game.findById(id);
-    return data;
-  } catch (eror) {
-    throw error;
-  }
-}
-
-async function fetchPhoneById(id) {
-  try {
-    const data = await Phone.findById(id);
-    return data;
-  } catch (eror) {
-    throw error;
-  }
-}
-
-async function fetchJacketById(id) {
-  try {
-    const data = await Jacket.findById(id);
-    return data;
-  } catch (eror) {
-    throw error;
-  }
-}
-async function fetchBookById(id) {
-  try {
-    const data = await Book.findById(id);
-    return data;
-  } catch (eror) {
-    throw error;
-  }
-}
 
 async function getOrderHistory(id) {
   try {
@@ -73,7 +33,12 @@ async function getOrderHistory(id) {
 
 async function getUserById(id) {
   try {
-    const data = await User.findById(id).populate("orderHistory");
+    const data = await User.findById(id)
+      .populate({
+        path: "cart.proID",
+        select: "title name price",
+      })
+      .populate({ path: "wishlist.proID", select: "name price title" });
     return data;
   } catch (err) {
     return err;
@@ -82,189 +47,17 @@ async function getUserById(id) {
 
 async function getUser(email) {
   try {
-    const data = await User.find({ email: email }).populate("orderHistory");
+    const data = await User.find({ email: email })
+      .populate({
+        path: "cart.proID",
+        select: "title name price",
+      })
+      .populate({ path: "wishlist.proID", select: "name price title" });
     return data;
   } catch (err) {
     return err;
   }
 }
-
-// Api to fetch products
-
-app.get("/products", async (req, res) => {
-  const games = await Game.find();
-  const jackets = await Jacket.find();
-  const books = await Phone.find();
-  const phones = await Book.find();
-
-  const products = [...games, ...jackets, ...books, ...phones];
-  res.status(200).json({ message: "Success", data: products });
-});
-
-app.get("/games/:id", async (req, res) => {
-  try {
-    const data = await fetchGamesById(req.params.id);
-    res.status(200).json({ message: "Success", data: data });
-  } catch (error) {
-    console.log(error);
-    res.status(404).json({ error: "Not Found" });
-  }
-});
-
-app.get("/game", async (req, res) => {
-  try {
-    const games = await Game.find();
-    res.status(200).json({ message: "Success", data: games });
-  } catch (error) {
-    res.status(404).json({ error: "Not Found" });
-  }
-});
-
-app.get("/phone/:id", async (req, res) => {
-  try {
-    const data = await fetchPhoneById(req.params.id);
-    res.status(200).json({ message: "Success", data: data });
-  } catch (error) {
-    console.log(error);
-    res.status(404).json({ error: "Not Found" });
-  }
-});
-
-app.get("/phone", async (req, res) => {
-  try {
-    const games = await Phone.find();
-    res.status(200).json({ message: "Success", data: games });
-  } catch (error) {
-    res.status(404).json({ error: "Not Found" });
-  }
-});
-
-app.get("/jacket/:id", async (req, res) => {
-  try {
-    const data = await fetchJacketById(req.params.id);
-    res.status(200).json({ message: "Success", data: data });
-  } catch (error) {
-    console.log(error);
-    res.status(404).json({ error: "Not Found" });
-  }
-});
-app.get("/jacket", async (req, res) => {
-  try {
-    const games = await Jacket.find();
-    res.status(200).json({ message: "Success", data: games });
-  } catch (error) {
-    res.status(404).json({ error: "Not Found" });
-  }
-});
-
-app.get("/book/:id", async (req, res) => {
-  try {
-    const data = await fetchBookById(req.params.id);
-    res.status(200).json({ message: "Success", data: data });
-  } catch (error) {
-    console.log(error);
-    res.status(404).json({ error: "Not Found" });
-  }
-});
-app.get("/book", async (req, res) => {
-  try {
-    const games = await Book.find();
-    res.status(200).json({ message: "Success", data: games });
-  } catch (error) {
-    res.status(404).json({ error: "Not Found" });
-  }
-});
-
-//funciton to push data
-// async function createData(data) {
-//     try{
-//         const newData = new Game(data)
-//         const saveData = await newData.save()
-//         return saveData
-//     } catch(error)
-//     {
-//         throw error
-//     }
-// }
-
-// async function createPhone(data){
-//     try{
-//         const newdata = new Phone(data)
-//         const saveData = await newdata.save()
-//         return saveData
-//     } catch(error)
-//     {
-//         console.log(error)
-//     }
-// }
-
-// async function createJacket(data){
-//     try
-//     {
-//         const newdata = new Jacket(data)
-//         const saveData = await newdata.save()
-//         return saveData
-//     }
-//     catch(error)
-//     {
-//         console.log(error)
-//     }
-// }
-
-// async function createBook(data)
-// {
-//     try{
-//         const newdata = new Book(data)
-//         const saveData = await newdata.save()
-//         return saveData
-//     }
-//     catch(error)
-//     {
-//         console.log(error)
-//     }
-// }
-
-// Apis to save data
-
-// app.post('/games',async (req,res) =>{
-//    try{
-//         const saveData = await createData(req.body)
-//         res.status(201).json({message:"Saved",data:saveData})
-//         console.log(saveData)
-//    } catch(error)
-//    {
-//         res.status(500).json({error:"Unable to send Data"})
-//    }
-// })
-
-// app.post('/books',async(req,res) =>{
-//     try{
-//         const saveData = await createBook(req.body)
-//         res.status(201).json({message:"Saved",data:saveData})
-//     }
-//     catch{
-//         res.status(500).json({error:"Unable to save"})
-//     }
-// })
-// app.post('/jackets',async(req,res) =>{
-//     try{
-//         const saveData = await createJacket(req.body)
-//         res.status(201).json({message:"Saved",data:saveData})
-//     }
-//     catch{
-//         res.status(500).json({error:"Unable to save"})
-//     }
-// })
-
-// app.post('/phone',async(req,res) =>{
-//     try{
-//         const saveData = await createPhone(req.body)
-//         res.status(201).json({message:"Saved",data:saveData})
-//     }
-//     catch{
-//         res.status(500).json({error:"Unable to save"})
-//     }
-// })
 
 app.get("/orderHistory/:id", async (req, res) => {
   try {
@@ -346,6 +139,7 @@ app.get("/userId/:id", async (req, res) => {
   try {
     const user = await getUserById(req.params.id);
     if (user) {
+      // console.log(user)
       res.status(200).json({ message: "Success", user });
     } else {
       res.status(404).json({ error: "User Not Found" });
@@ -367,67 +161,123 @@ app.put("/deleteAddress/:id", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json({message:"Address Deleted" ,user: updatedUser });
+    res.status(200).json({ message: "Address Deleted", user: updatedUser });
   } catch (err) {
     console.error(err);
     res.status(500).json({ err: "Server Error", details: err.message });
   }
 });
 
-app.post('/user/:id/wishlist',async(req,res) =>{
-  try{
-    const user = await getUserById(req.params.id)
-    if(user)
-    {
-      user.wishlist.push(req.body)
-      await user.save()
-      res.status(200).json({message:"items added to wishlist",user})
+app.post("/user/:id/wishlist", async (req, res) => {
+  try {
+    const user = await getUserById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ err: "User not found" });
     }
-    else{
-      res.status(404).json({err:"User not found"})
-    }
-  }catch(err)
-  {
-    res.status(500).json({err:"Server Error",err})
-  }
-})
-app.post('/user/:id/cart',async(req,res) =>{
-  try{
-    const user = await getUserById(req.params.id)
-    if(user)
-    {
-      user.cart.push(req.body)
-      await user.save()
-      res.status(200).json({message:"items added to cart",user})
-    }
-    else{
-      res.status(404).json({err:"User not found"})
-    }
-  }catch(err)
-  {
-    res.status(500).json({err:"Server Error",err})
-  }
-})
 
-app.put('/user/:id/cart',async(req,res)=>{
-  try{
-    const user = await getUserById(req.params.id)
-    if(user)
-    {
-      if(type="delete")
-      {
-         user.cart.filter((product) => product._id.toString() != req.body.product._id )
-        await user.save()  
+    // Use findIndex to check for existing item
+    const itemIndex = user.wishlist.findIndex(
+      (item) => item.proID._id.toString() === req.body.proID
+    );
 
-        res.status(200).sjon({message:"update successfull",user})
+    if (itemIndex !== -1) {
+      // Item exists: update quantity
+      user.wishlist[itemIndex].quantity += req.body.quantity;
+    } else {
+      // Item doesn't exist: add new
+      user.wishlist.push(req.body);
+    }
+
+    await user.save();
+    const updatedUser = await getUserById(req.params.id);
+
+    res.status(200).json({
+      message: "Wishlist updated successfully",
+      user: updatedUser,
+    });
+  } catch (err) {
+    res.status(500).json({ err: "Server Error", error: err.message });
+  }
+});
+
+app.post("/user/:id/cart", async (req, res) => {
+  try {
+    const user = await getUserById(req.params.id);
+    if (user) {
+      const indexS = user.cart.findIndex(
+        (item) => item.proID._id.toString() == req.body.proID
+      );
+      if (indexS != -1) {
+        user.cart[indexS].quantity += req.body.quantity;
+      } else {
+        user.cart.push(req.body);
+      }
+      await user.save();
+      const updatedUser = await getUserById(req.params.id);
+      res
+        .status(200)
+        .json({ message: "Items added to wishlist", user: updatedUser });
+    } else {
+      res.status(404).json({ err: "User not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ err: "Server Error", err });
+  }
+});
+
+app.put("/user/:id/cart", async (req, res) => {
+  const type = req.body.type;
+  try {
+    const user = await getUserById(req.params.id);
+    if (user) {
+      if ((type = "delete")) {
+        user.cart.filter(
+          (product) => product._id.toString() != req.body.product._id
+        );
+        await user.save();
+
+        res.status(200).sjon({ message: "update successfull", user });
+      } else {
+        const proId = req.body.data.id;
+        const quantity = req.body.data.quantity;
+        user.cart.map((pro) =>
+          pro._id == proId ? (pro.quantity += quantity) : pro
+        );
+        // console.log(user.cart);
+        // await user.save()
       }
     }
-  }catch(err)
-  {
-    res.status(500).json({err:"server error",err})
+  } catch (err) {
+    res.status(500).json({ err: "server error", err });
   }
-})
+});
 
+app.get("/products/:name", async (req, res) => {
+  try {
+    const data = await Product.find({ type: req.params.name });
+    if (data) {
+      res.status(200).json({ message: "success", data });
+    } else {
+      res.status(404).json({ message: "No Products Found" });
+    }
+  } catch (err) {
+    res.status(500).json({ err: "Server Error", details: err.message });
+  }
+});
+
+// app.post('/product',async (req,res) =>{
+//   try{
+//     const newProduct = new Product(req.body)
+//     await newProduct.save()
+//     if(newProduct)
+//     {
+//       res.status(201).json({message:"Product created",newProduct})
+//     }
+//   }catch(err)
+//   {
+//     console.log(err)
+//   }
+// })
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

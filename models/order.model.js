@@ -4,13 +4,9 @@ const mongoose = require('mongoose')
 const orderSchema = new mongoose.Schema({
     userId: {type: mongoose.Schema.Types.ObjectId,ref:"eComUser"},
     items:{
-        type:{
-            type:String,
-            enum:["Game","Phone","Jacket","Book"]            
-        },
         itemId:{
             type:mongoose.Schema.Types.ObjectId,
-            refPath:'items.type'
+            ref:"Product"
         },
         quantity:{
             type:Number,
