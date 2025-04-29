@@ -38,7 +38,15 @@ async function getUserById(id) {
         path: "cart.proID",
         select: "title name price",
       })
-      .populate({ path: "wishlist.proID", select: "name price title" });
+      .populate({ path: "wishlist.proID", select: "name price title" })
+      .populate({
+        path: "orderHistory",
+        populate: {
+          path: "items.itemId",
+          model: "Product",
+          select: "name price title",
+        },
+      });
     return data;
   } catch (err) {
     return err;
@@ -52,37 +60,48 @@ async function getUser(email) {
         path: "cart.proID",
         select: "title name price",
       })
-      .populate({ path: "wishlist.proID", select: "name price title" });
+      .populate({ path: "wishlist.proID", select: "name price title" })
+      .populate({
+        path: "orderHistory",
+        populate: {
+          path: "items.itemId",
+          model: "Product",
+          select: "name title price",
+        },
+      });
     return data;
   } catch (err) {
     return err;
   }
 }
 
-app.get("/orderHistory/:id", async (req, res) => {
-  try {
-    const data = await getOrderHistory(req.params.id);
-    if (data) {
-      res.status(200).json({ message: "Success", data: data });
-    } else {
-      res.status(404).json({ error: "Not Found" });
-    }
-  } catch (err) {
-    res.status(500).json({ err: "Server Error" });
-  }
-});
+// app.get("/orderHistory/:id", async (req, res) => {
+//   try {
+//     const data = await getOrderHistory(req.params.id);
+//     if (data) {
+//       res.status(200).json({ message: "Success", data: data });
+//     } else {
+//       res.status(404).json({ error: "Not Found" });
+//     }
+//   } catch (err) {
+//     res.status(500).json({ err: "Server Error" });
+//   }
+// });
 
 app.post("/order", async (req, res) => {
   try {
     const newOrder = new Order(req.body);
     await newOrder.save();
     if (newOrder) {
-      const user = await User.findById(newOrder.userId);
+      const user = await getUserById(newOrder.userId);
+      user.cart = [];
       user.orderHistory.push(newOrder._id);
       await user.save();
-      res.status(201).json({ message: "Order Created", newOrder });
+      const updatedUser = await getUserById(newOrder.userId);
+      res.status(201).json({ message: "Order Created", user: updatedUser });
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ err: "Server Error" });
   }
 });
@@ -225,30 +244,52 @@ app.post("/user/:id/cart", async (req, res) => {
   }
 });
 
-app.put("/user/:id/cart", async (req, res) => {
-  const type = req.body.type;
+app.delete("/:id/cart", async (req, res) => {
   try {
     const user = await getUserById(req.params.id);
     if (user) {
-      if ((type = "delete")) {
-        user.cart.filter(
-          (product) => product._id.toString() != req.body.product._id
-        );
-        await user.save();
-
-        res.status(200).sjon({ message: "update successfull", user });
+      const indexS = user.cart.findIndex(
+        (item) => item.proID._id.toString() == req.body.proID
+      );
+      if (indexS !== -1) {
+        user.cart.splice(indexS, 1); // remove the item at that index
+        await user.save(); // save the updated user
+        res
+          .status(200)
+          .json({ message: "Item removed from cart successfully" });
       } else {
-        const proId = req.body.data.id;
-        const quantity = req.body.data.quantity;
-        user.cart.map((pro) =>
-          pro._id == proId ? (pro.quantity += quantity) : pro
-        );
-        // console.log(user.cart);
-        // await user.save()
+        res.status(404).json({ message: "Item not found in cart" });
       }
+    } else {
+      res.status(404).json({ message: "User not found" });
     }
   } catch (err) {
-    res.status(500).json({ err: "server error", err });
+    res.status(500).json({ message: "Server Error", err });
+  }
+});
+
+app.delete("/:id/wishlist", async (req, res) => {
+  try {
+    const user = await getUserById(req.params.id);
+    if (user) {
+      const indexS = user.wishlist.findIndex(
+        (item) => item.proID._id.toString() == req.body.proID
+      );
+      console.log(indexS)
+      if (indexS !== -1) {
+        user.wishlist.splice(indexS, 1); // remove the item at that index
+        await user.save(); // save the updated user
+        res
+          .status(200)
+          .json({ message: "Item removed from cart successfully" });
+      } else {
+        res.status(404).json({ message: "Item not found in cart" });
+      }
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: "Server Error", err });
   }
 });
 

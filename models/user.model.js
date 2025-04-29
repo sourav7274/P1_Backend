@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema({
       },
     },
   ],
-  orderHistory: { type: mongoose.Schema.Types.ObjectId, red: "Order" },
+  orderHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
 });
 
 module.exports = mongoose.model("eComUser", userSchema);
