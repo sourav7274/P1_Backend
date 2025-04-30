@@ -244,7 +244,8 @@ app.post("/user/:id/cart", async (req, res) => {
   }
 });
 
-app.delete("/:id/cart", async (req, res) => {
+app.put("/:id/cart", async (req, res) => {
+  // console.log("attempt");
   try {
     const user = await getUserById(req.params.id);
     if (user) {
@@ -254,9 +255,11 @@ app.delete("/:id/cart", async (req, res) => {
       if (indexS !== -1) {
         user.cart.splice(indexS, 1); // remove the item at that index
         await user.save(); // save the updated user
-        res
-          .status(200)
-          .json({ message: "Item removed from cart successfully" });
+        const updatedUser = await getUserById(req.params.id);
+        res.status(200).json({
+          message: "Item removed from cart successfully",
+          user: updatedUser,
+        });
       } else {
         res.status(404).json({ message: "Item not found in cart" });
       }
@@ -268,20 +271,22 @@ app.delete("/:id/cart", async (req, res) => {
   }
 });
 
-app.delete("/:id/wishlist", async (req, res) => {
+app.put("/:id/wishlist", async (req, res) => {
   try {
     const user = await getUserById(req.params.id);
+
     if (user) {
       const indexS = user.wishlist.findIndex(
         (item) => item.proID._id.toString() == req.body.proID
       );
-      console.log(indexS)
       if (indexS !== -1) {
         user.wishlist.splice(indexS, 1); // remove the item at that index
         await user.save(); // save the updated user
-        res
-          .status(200)
-          .json({ message: "Item removed from cart successfully" });
+        const updatedUser = await getUserById(req.params.id);
+        res.status(200).json({
+          message: "Item removed from cart successfully",
+          user: updatedUser,
+        });
       } else {
         res.status(404).json({ message: "Item not found in cart" });
       }
@@ -303,6 +308,39 @@ app.get("/products/:name", async (req, res) => {
     }
   } catch (err) {
     res.status(500).json({ err: "Server Error", details: err.message });
+  }
+});
+
+app.put("/:id/cartFWish", async (req, res) => {
+  try {
+    const user = await getUserById(req.params.id);
+    if (user) {
+      const indexS = await user.cart.findIndex(
+        (item) => 
+          item.proID._id.toString() == req.body.proID._id
+      );
+      const indexW = await user.wishlist.findIndex(
+        (item) => 
+          item.proID._id.toString() == req.body.proID._id
+      );
+
+      if (indexS != -1) {
+        user.cart[indexS].quantity += req.body.quantity;
+      } else {
+        user.cart.push(req.body);
+      }
+      user.wishlist.splice(indexW, 1);
+      await user.save();
+      const updatedUser = await getUserById(req.params.id);
+      res
+        .status(201)
+        .json({ message: "wishlist and cart updated", user: updatedUser });
+    } else {
+      console.log("user not found");
+    }
+  } catch (err) {
+    console.log(err);
+    res.json({ err: "Server Error", err });
   }
 });
 
