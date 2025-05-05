@@ -1,6 +1,8 @@
 const express = require("express");
 const { initialDatabase } = require("./db/db.conect");
 const cors = require("cors");
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcryptjs')
 const app = express();
 app.use(express.json());
 const corsOptions = {
@@ -19,6 +21,24 @@ initialDatabase();
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to API" });
 });
+
+// MiddleWare for authorization
+
+const authMiddlewre = (req,res,next) =>{
+  const authHeader = req.headers.authorization
+  if(!authHeader || !authHeader.startsWith(`Bearer `))
+    return res.status(401).json({message:"No token provided"})
+  // console.log(authHeader.split(' '))
+  const token = authHeader.split(' ')[1]
+  try{
+    const decoded = jwt.verify(token,'secretKey')
+    req.user = decoded
+    next()
+  }catch{
+    return res.status(401).json({message:"Invalid Token"})
+  }
+}
+
 
 // Functions to fetch data
 
@@ -55,7 +75,7 @@ async function getUserById(id) {
 
 async function getUser(email) {
   try {
-    const data = await User.find({ email: email })
+    const data = await User.findOne({ email: email })
       .populate({
         path: "cart.proID",
         select: "title name price",
@@ -71,9 +91,22 @@ async function getUser(email) {
       });
     return data;
   } catch (err) {
-    return err;
+    console.error("Error in getUser:", err);
+    throw err;
   }
 }
+
+// Protected Routes
+
+app.get("/dashboard",authMiddlewre,(req,res) =>{
+  res.json({"message":`hello User ${req.user.name}`})
+})
+
+
+
+
+
+// Normal Routes
 
 // app.get("/orderHistory/:id", async (req, res) => {
 //   try {
@@ -111,8 +144,10 @@ app.post("/login", async (req, res) => {
     const { email, password } = req.body;
     const user = await getUser(email);
     if (user) {
-      if (user[0].password == password) {
-        res.status(200).json({ message: "Login Success", user });
+      const isMatch = await bcrypt.compare(password,user.password)
+      if (isMatch) {
+        const token = jwt.sign({id:user._id,name:user.name,email:user.email},'secretKey',{expiresIn:"1hr"})
+        res.status(200).json({ message: "Login Success", token,user });
       } else {
         res.status(401).json({ error: "Invalid Credentials" });
       }
@@ -120,20 +155,24 @@ app.post("/login", async (req, res) => {
       res.status(404).json({ error: "User Not Found" });
     }
   } catch (err) {
+    console.log(err)
     res.status(500).json({ err: "Server Error" });
   }
 });
 
 app.post("/user", async (req, res) => {
-  // console.log("attempt")
   try {
-    const newUser = new User(req.body);
+    const {name,email,password} = req.body
+    // console.log(name,email,password)
+    const hashPassword = await bcrypt.hash(password,10)
+    const newUser = new User({name,email,password:hashPassword});
     await newUser.save();
     if (newUser) {
       res.status(201).json({ message: "User Created", newUser });
     }
   } catch (err) {
-    res.status(500).json({ err: "Server Error" });
+    console.log(err)
+    res.status(500).json({ err: "Server Error",err });
   }
 });
 
@@ -316,12 +355,10 @@ app.put("/:id/cartFWish", async (req, res) => {
     const user = await getUserById(req.params.id);
     if (user) {
       const indexS = await user.cart.findIndex(
-        (item) => 
-          item.proID._id.toString() == req.body.proID._id
+        (item) => item.proID._id.toString() == req.body.proID._id
       );
       const indexW = await user.wishlist.findIndex(
-        (item) => 
-          item.proID._id.toString() == req.body.proID._id
+        (item) => item.proID._id.toString() == req.body.proID._id
       );
 
       if (indexS != -1) {
