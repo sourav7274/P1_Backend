@@ -11,25 +11,12 @@ const userSchema = new mongoose.Schema({
     unique: true,
   },
   password: String,
-  address: [
-    {
-      addName: String,
-      phnNumber: String,
-      houseNo: String,
-      street: String,
-      city: String,
-      state: String,
-      country: String,
-      pincode: String,
-      landmark: String,
-    },
-  ],
+  address: [{ type: mongoose.Schema.Types.ObjectId, ref: "Address" }],
   wishlist: [
     {
       proID: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
       quantity: {
         type: Number,
-       
       },
     },
   ],
@@ -38,7 +25,6 @@ const userSchema = new mongoose.Schema({
       proID: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
       quantity: {
         type: Number,
-       
       },
     },
   ],

@@ -16,9 +16,23 @@ const orderSchema = new mongoose.Schema(
         },
       },
     ],
+    total: Number,
+    address: [
+      {
+        addName: String,
+        phnNumber: String,
+        houseNo: String,
+        street: String,
+        city: String,
+        state: String,
+        country: String,
+        pincode: String,
+        landmark: String,
+      },
+    ],
   },
   {
-    timeStamps: true,
+    timestamps: true,
   }
 );
 
