@@ -170,14 +170,14 @@ app.post("/login", async (req, res) => {
         );
         res.status(200).json({ message: "Login Success", token, user });
       } else {
-        res.status(401).json({ error: "Invalid Credentials" });
+        res.status(401).json({ message: "Invalid Credentials" });
       }
     } else {
-      res.status(404).json({ error: "User Not Found" });
+      res.status(404).json({ message: "User Not Found" });
     }
   } catch (err) {
     // console.log(err);
-    res.status(500).json({ err: "Server Error" });
+    res.status(500).json({ message: "Server Error", err });
   }
 });
 
@@ -192,8 +192,12 @@ app.post("/user", async (req, res) => {
       res.status(201).json({ message: "User Created", newUser });
     }
   } catch (err) {
-    // console.log(err);
-    res.status(500).json({ err: "Server Error", err });
+    if (err.code == 11000) {
+      console.log("Email already exists");
+      res.status(400).json({ err: "Email already exists" });
+    } else {
+      res.status(500).json({ err: "Server Error", err });
+    }
   }
 });
 
@@ -234,15 +238,13 @@ app.get("/userId/:id", async (req, res) => {
 app.put("/deleteAddress/:id", async (req, res) => {
   // console.log(req.body);
   try {
-    const address = await Address.findOneAndDelete(req.body.addId)
-    if(address)
-    { 
-      const user = await getUserById(req.params.id)
-      user.address.filter((add) => add != req.body.addId)
+    const address = await Address.findOneAndDelete(req.body.addId);
+    if (address) {
+      const user = await getUserById(req.params.id);
+      user.address.filter((add) => add != req.body.addId);
       const updatedUser = await getUserById(req.params.id);
       res.status(200).json({ message: "Address Deleted", user: updatedUser });
     }
-   
   } catch (err) {
     console.error(err);
     res.status(500).json({ err: "Server Error", details: err.message });
@@ -397,7 +399,7 @@ app.put("/:id/cartFWish", async (req, res) => {
         .json({ message: "wishlist and cart updated", user: updatedUser });
     } else {
       console.log("user not found");
-      res.status(404),json({message:"User not Found"})
+      res.status(404), json({ message: "User not Found" });
     }
   } catch (err) {
     // console.log(err);
