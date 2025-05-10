@@ -189,7 +189,7 @@ app.post("/user", async (req, res) => {
     const newUser = new User({ name, email, password: hashPassword });
     await newUser.save();
     if (newUser) {
-      res.status(201).json({ message: "User Created", newUser });
+      res.status(201).json({ message: "User Created Successfully. Please wait redirecting to login page", newUser });
     }
   } catch (err) {
     if (err.code == 11000) {
